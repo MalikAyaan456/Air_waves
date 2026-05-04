@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitive Definition
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Validation Blueprints
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt'])
+        && data.keys().size() == 3
+        && data.uid is string && data.uid.size() <= 128
+        && data.email is string && data.email.size() <= 256
+        && data.createdAt is number;
+    }
+
+    function isValidChat(data) {
+      return data.keys().hasAll(['userId', 'title', 'createdAt', 'lastMessageAt', 'mode'])
+        && data.keys().size() == 5
+        && data.userId == request.auth.uid
+        && data.title is string && data.title.size() <= 500
+        && data.createdAt is number
+        && data.lastMessageAt is number
+        && data.mode in ['chat', 'agent', 'game', 'app'];
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['role', 'content', 'timestamp', 'chatId'])
+        && data.keys().size() == 4
+        && data.role in ['user', 'assistant']
+        && data.content is string && data.content.size() <= 20000
+        && data.timestamp is number
+        && data.chatId is string;
+    }
+
+    // Phase 4: Drafting the "Fortress" Rules
+    
+    // User Profiles
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt;
+    }
+
+    // Chats
+    match /chats/{chatId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidChat(incoming());
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid
+        && isValidChat(incoming())
+        && (
+          // Action: Update timestamp or title
+          incoming().diff(existing()).affectedKeys().hasOnly(['lastMessageAt', 'title'])
+        );
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      // Messages Subcollection
+      match /messages/{messageId} {
+        function getParentChat() {
+          return get(/databases/$(database)/documents/chats/$(chatId)).data;
+        }
+
+        allow list: if isSignedIn() && getParentChat().userId == request.auth.uid;
+        allow get: if isSignedIn() && getParentChat().userId == request.auth.uid;
+        allow create: if isSignedIn() && getParentChat().userId == request.auth.uid && isValidMessage(incoming());
+        // Messages are usually immutable
+        allow update, delete: if false;
+      }
+    }
+  }
+}

@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 font-sans antialiased;
+  }
+}
+
+@keyframes aura-flow {
+  0% { filter: hue-rotate(0deg) blur(50px); transform: translate(-10%, -10%) scale(1); }
+  50% { filter: hue-rotate(180deg) blur(80px); transform: translate(10%, 10%) scale(1.1); }
+  100% { filter: hue-rotate(360deg) blur(50px); transform: translate(-10%, -10%) scale(1); }
+}
+
+@keyframes rotate-gradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.rgb-rotating-border {
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff);
+  border-radius: 32px;
+  opacity: 0.1;
+  transition: opacity 0.3s;
+}
+
+.group:focus-within .rgb-rotating-border {
+  opacity: 0.5;
+  filter: blur(2px);
+}
+
+.aura-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background: white;
+}
+
+.aura-blob {
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.4), rgba(255, 0, 255, 0.4));
+  border-radius: 50%;
+  animation: aura-flow 20s infinite alternate ease-in-out;
+  opacity: 0.6;
+}
+
+.markdown-body h1 { @apply text-2xl font-bold mt-6 mb-4; }
+.markdown-body h2 { @apply text-xl font-bold mt-5 mb-3; }
+.markdown-body h3 { @apply text-lg font-bold mt-4 mb-2; }
+.markdown-body p { @apply mb-4 leading-relaxed; }
+.markdown-body code { @apply bg-gray-100 px-1 py-0.5 rounded font-mono text-sm; }
+.markdown-body pre { @apply bg-[#1e1e1e] text-white p-4 rounded-lg my-4 overflow-x-auto; }
+.markdown-body ul { @apply list-disc ml-6 mb-4; }
+.markdown-body ol { @apply list-decimal ml-6 mb-4; }
+

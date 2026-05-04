@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": ["string", "null"] },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["uid", "createdAt"]
+    },
+    "Chat": {
+      "title": "Chat Session",
+      "description": "A conversation session between a user and AI",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "lastMessageAt": { "type": "number" },
+        "mode": { "type": "string", "enum": ["chat", "agent", "game", "app"] }
+      },
+      "required": ["userId", "title", "createdAt", "lastMessageAt", "mode"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A single message in a chat session",
+      "type": "object",
+      "properties": {
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "chatId": { "type": "string" },
+        "userId": { "type": "string" }
+      },
+      "required": ["role", "content", "timestamp", "chatId", "userId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles restricted by UID"
+    },
+    "/chats/{chatId}": {
+      "schema": "Chat",
+      "description": "Chat sessions owned by a user"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a chat session"
+    }
+  }
+}

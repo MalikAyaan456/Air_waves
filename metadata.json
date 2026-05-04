@@ -1,0 +1,14 @@
+{
+  "name": "Air Waves",
+  "description": "An ultra-advanced, high-level AI platform featuring multi-agent orchestration, image/video generation, and sophisticated memory optimization.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "AI Chat",
+    "Image Generation",
+    "Video Analysis",
+    "File Summarization"
+  ]
+}
